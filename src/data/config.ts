@@ -1,12 +1,12 @@
 export const siteConfig = {
   companyName: 'TruckingMBA',
-  siteUrl: 'https://trucking. mba',
+   siteUrl: 'http://localhost:4321',
   Socials: {
       xSocial: 'https://x.com/astrodotbuild',
       Instagram: 'https://www.instagram.com/astrodotbuild',
       LinkedIn: 'https://www.linkedin.com/company/astrodotbuild',
       Email: 'support@trucking.mba',
-      Phone: '+12423-641-0833',
+      Phone: '+1-423-641-0833',
       Location: 'Freight Alley, Chattanooga, TN',
   }
 };

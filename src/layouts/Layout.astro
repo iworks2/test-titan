@@ -33,7 +33,8 @@ const pageTitle = title ? `${title} ${Separator} ${SiteName}` : SiteName;
 const pageDescription = description || defaultDescription || '';
 const pageImage = image || '';
 const canonicalPath = canonicalUrl || Astro.url.pathname;
-const fullCanonicalUrl = new URL(canonicalPath, siteConfig.siteUrl).toString();
+const baseUrl = Astro.site ?? siteConfig.siteUrl;
+const fullCanonicalUrl = new URL(canonicalPath, baseUrl).toString();
 
 ---
 
