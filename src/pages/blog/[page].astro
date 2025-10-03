@@ -5,19 +5,11 @@ import { blogSetting, siteConfig } from '../../data/config';
 
 export const prerender = true;
 
-// Build-time: generate /blog/1, /blog/2, /blog/3, ...
 export async function getStaticPaths() {
   const all = await getCollection('blog');
-
-  // Filter unpublished unless dev
   const filtered = all.filter((post) => import.meta.env.DEV || post.data.publish !== false);
-
-  // Sort by date DESC (publishDate only)
-  const sorted = filtered.sort((a, b) => {
-    const aDate = +(a.data.publishDate ? new Date(a.data.publishDate) : 0);
-    const bDate = +(b.data.publishDate ? new Date(b.data.publishDate) : 0);
-    return bDate - aDate;
-  });
+  const getBestDate = (e) => (e.data.publishDate ?? e.data.date);
+  const sorted = filtered.sort((a, b) => +new Date(getBestDate(b)) - +new Date(getBestDate(a)));
 
   const perPage = blogSetting.postsPerPage ?? 6;
   const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
@@ -30,21 +22,15 @@ export async function getStaticPaths() {
 
 const { page, totalPages, perPage } = Astro.props as { page: number; totalPages: number; perPage: number };
 
-// Load again at build for this page’s slice
 const all = await getCollection('blog');
 const filtered = all.filter((post) => import.meta.env.DEV || post.data.publish !== false);
-const sorted = filtered.sort((a, b) => {
-  const aDate = +(a.data.publishDate ? new Date(a.data.publishDate) : 0);
-  const bDate = +(b.data.publishDate ? new Date(b.data.publishDate) : 0);
-  return bDate - aDate;
-});
+const getBestDate = (e) => (e.data.publishDate ?? e.data.date);
+const sorted = filtered.sort((a, b) => +new Date(getBestDate(b)) - +new Date(getBestDate(a)));
 
-// Slice for current page
 const start = (page - 1) * perPage;
 const end = start + perPage;
 const paginatedPosts = sorted.slice(start, end);
 
-// Canonical / prev / next (for /blog/2 style)
 const base = siteConfig.siteUrl.replace(/\/$/, '');
 const isFirst = page === 1;
 const isLast = page === totalPages;
@@ -65,7 +51,7 @@ const nextUrl = !isLast ? `${base}/blog/${page + 1}/` : null;
       posts={paginatedPosts}
       currentPage={page}
       totalPages={totalPages}
-      baseUrl="/blog"     {/* your layout can build /blog/2 links from this */}
+      baseUrl="/blog"
       title="Blog"
       subtitle="Latest articles and news from the team"
     />
