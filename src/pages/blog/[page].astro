@@ -3,22 +3,24 @@ import PaginatedBlogLayout from '../../components/blog/PaginatedBlogLayout.astro
 import { getCollection } from 'astro:content';
 import { blogSetting, siteConfig } from '../../data/config';
 
-export const prerender = true;
-
 export async function getStaticPaths() {
   const all = await getCollection('blog');
   const filtered = all.filter((post) => import.meta.env.DEV || post.data.publish !== false);
+
   const getBestDate = (e) => (e.data.publishDate ?? e.data.date);
   const sorted = filtered.sort((a, b) => +new Date(getBestDate(b)) - +new Date(getBestDate(a)));
 
   const perPage = blogSetting.postsPerPage ?? 6;
   const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
 
+  console.log("[blog getStaticPaths] posts:", sorted.length, "perPage:", perPage, "totalPages:", totalPages);
+
   return Array.from({ length: totalPages }, (_, i) => ({
     params: { page: String(i + 1) },
     props: { totalPages, perPage },
   }));
 }
+
 
 const { page, totalPages, perPage } = Astro.props as { page: number; totalPages: number; perPage: number };
 
