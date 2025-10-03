@@ -1,55 +1,73 @@
 ---
-import { getCollection } from 'astro:content';
-import { blogSetting } from '../../data/config';
 import PaginatedBlogLayout from '../../components/blog/PaginatedBlogLayout.astro';
+import { getCollection } from 'astro:content';
+import { blogSetting, siteConfig } from '../../data/config';
+
 export const prerender = true;
 
-// Get static paths for all possible pages
+// Build-time: generate /blog/1, /blog/2, /blog/3, ...
 export async function getStaticPaths() {
-    const allPosts = await getCollection('blog');
+  const all = await getCollection('blog');
 
-    // Filter posts
-    const filteredPosts = allPosts.filter((post) => {
-        return import.meta.env.DEV || post.data.publish !== false;
-    });
+  // Filter unpublished unless dev
+  const filtered = all.filter((post) => import.meta.env.DEV || post.data.publish !== false);
 
-    // Sort posts by date
-    const sortedPosts = filteredPosts.sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+  // Sort by date DESC (publishDate only)
+  const sorted = filtered.sort((a, b) => {
+    const aDate = +(a.data.publishDate ? new Date(a.data.publishDate) : 0);
+    const bDate = +(b.data.publishDate ? new Date(b.data.publishDate) : 0);
+    return bDate - aDate;
+  });
 
-    const totalPosts = sortedPosts.length;
-    const totalPages = Math.ceil(totalPosts / blogSetting.postsPerPage);
+  const perPage = blogSetting.postsPerPage ?? 6;
+  const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
 
-    // Create paths for all pages except page 1 (which is handled by index.astro)
-    return Array.from({ length: totalPages - 1 }, (_, i) => {
-        const page = i + 2; // Start from page 2
-        const start = (page - 1) * blogSetting.postsPerPage;
-        const end = start + blogSetting.postsPerPage;
-
-        return {
-            params: { page: String(page) },
-            props: {
-                page,
-                totalPages,
-                posts: sortedPosts.slice(start, end),
-            },
-        };
-    });
+  return Array.from({ length: totalPages }, (_, i) => ({
+    params: { page: String(i + 1) },
+    props: { totalPages, perPage },
+  }));
 }
 
-const { page, totalPages, posts } = Astro.props;
+const { page, totalPages, perPage } = Astro.props as { page: number; totalPages: number; perPage: number };
 
-// Redirect page 1 to the main blog page
-if (page === 1) {
-    return Astro.redirect('/blog');
-}
+// Load again at build for this page’s slice
+const all = await getCollection('blog');
+const filtered = all.filter((post) => import.meta.env.DEV || post.data.publish !== false);
+const sorted = filtered.sort((a, b) => {
+  const aDate = +(a.data.publishDate ? new Date(a.data.publishDate) : 0);
+  const bDate = +(b.data.publishDate ? new Date(b.data.publishDate) : 0);
+  return bDate - aDate;
+});
+
+// Slice for current page
+const start = (page - 1) * perPage;
+const end = start + perPage;
+const paginatedPosts = sorted.slice(start, end);
+
+// Canonical / prev / next (for /blog/2 style)
+const base = siteConfig.siteUrl.replace(/\/$/, '');
+const isFirst = page === 1;
+const isLast = page === totalPages;
+const canonical = isFirst ? `${base}/blog/` : `${base}/blog/${page}/`;
+const prevUrl = !isFirst ? (page === 2 ? `${base}/blog/` : `${base}/blog/${page - 1}/`) : null;
+const nextUrl = !isLast ? `${base}/blog/${page + 1}/` : null;
 ---
 
-<PaginatedBlogLayout
-    {posts}
-    currentPage={page}
-    {totalPages}
-    baseUrl="/blog"
-    title="Blog"
-    subtitle="Latest articles and news from the team"
-/>
-
+<html lang="en">
+  <head>
+    <title>Blog — Page {page} | {siteConfig.companyName}</title>
+    <link rel="canonical" href={canonical} />
+    {prevUrl && <link rel="prev" href={prevUrl} />}
+    {nextUrl && <link rel="next" href={nextUrl} />}
+  </head>
+  <body>
+    <PaginatedBlogLayout
+      posts={paginatedPosts}
+      currentPage={page}
+      totalPages={totalPages}
+      baseUrl="/blog"     {/* your layout can build /blog/2 links from this */}
+      title="Blog"
+      subtitle="Latest articles and news from the team"
+    />
+  </body>
+</html>
