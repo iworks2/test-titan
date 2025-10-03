@@ -6,7 +6,7 @@ import { categories } from '@data/categories';
 const categoryNames = categories.map((category) => category.name);
 
 const blog = defineCollection({
-    loader: glob({ base: './src/content/blog', pattern: '**/*.md' }),
+    loader: glob({ base: './src/content/blog', pattern: '**/*.{md,mdx}' }),
     schema: ({ image }) =>
         z.object({
             title: z.string(),
