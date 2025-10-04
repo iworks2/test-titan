@@ -3,12 +3,14 @@ import tailwindcss from '@tailwindcss/vite';
 
 import sitemap from '@astrojs/sitemap';
 import mdx from '@astrojs/mdx';
+import react from '@astrojs/react'; 
 
 // Get the site URL from environment variable or use a default for local development
 const site = process.env.PUBLIC_SITE_URL || 'http://localhost:4321';
 
 export default defineConfig({
   site,
+  integrations: [react(), sitemap(), mdx()],
   vite: {
     plugins: [tailwindcss()],
     css: {
