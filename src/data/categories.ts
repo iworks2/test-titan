@@ -40,6 +40,11 @@ export const categories: Category[] = [
     slug: 'seo',
     description: 'Search engine optimization strategies and best practices'
   },
+  {
+    name: 'Safety & Compliance',
+    slug: 'safety-and-compliance',
+    description: 'DOT, FMCSA, and safety compliance guidance for trucking operations'
+  },
   
 ];
 

@@ -1,0 +1,33 @@
+---
+export interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  align?: 'left' | 'center' | 'right' | 'full';
+  maxWidth?: number; // pixels, ignored for full
+  class?: string;
+}
+const { src, alt, caption, align = 'center', maxWidth = 720, class: cls } = Astro.props;
+
+// Alignment utility classes
+const alignClass = {
+  left: 'tmba-figure-left',
+  center: 'tmba-figure-center',
+  right: 'tmba-figure-right',
+  full: 'tmba-figure-full'
+}[align] || 'tmba-figure-center';
+---
+<figure class={`tmba-figure ${alignClass} ${cls || ''}`} style={align !== 'full' ? `max-width:${maxWidth}px` : undefined}>
+  <img src={src} alt={alt} loading="lazy" />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .tmba-figure { margin: 2rem auto; }
+  .tmba-figure img { display: block; width: 100%; height: auto; }
+  .tmba-figure figcaption { margin-top: .5rem; font-size: .9rem; color: #4a4a4a; text-align: center; }
+  .tmba-figure-left { margin-left: 0; margin-right: auto; text-align: left; }
+  .tmba-figure-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .tmba-figure-right { margin-left: auto; margin-right: 0; text-align: right; }
+  .tmba-figure-full { width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; }
+</style>
