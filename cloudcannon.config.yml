@@ -2,13 +2,6 @@ paths:
   uploads: public/uploads
   static: public
 collections_config:
-  pages:
-    path: src/pages
-    icon: wysiwyg
-    disable_url: false
-    disable_add: false
-    disable_add_folder: false
-    disable_file_actions: false
   blog:
     path: src/content/blog
     icon: event_available
@@ -75,6 +68,13 @@ collections_config:
   team:
     path: src/content/team
     icon: tram
+    disable_url: false
+    disable_add: false
+    disable_add_folder: false
+    disable_file_actions: false
+  pages:
+    path: src/pages
+    icon: wysiwyg
     disable_url: false
     disable_add: false
     disable_add_folder: false
