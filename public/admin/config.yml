@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: ユーザー名/リポジトリ名
+  repo: iworks2/test-titan
   branch: main
 
 media_folder: "public/uploads"
